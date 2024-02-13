@@ -39,7 +39,7 @@ export class PokemonService {
       console.log(error);
 
       throw new InternalServerErrorException(`cant create pokemon -check server`)
-      
+
 
     }
 
@@ -47,19 +47,55 @@ export class PokemonService {
 
   }
 
-  findAll() {
-    return `This action returns all pokemon`;
+  async findAll(): Promise<Pokemon[]> {
+
+    const pokemons = await this.pokemonModel.find();
+
+
+    return pokemons;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} pokemon`;
+  async findOne(termino: string) {
+
+    const pokemon = await this.pokemonModel.findOne({ no: termino });
+
+
+
+    return pokemon;
   }
 
-  update(id: number, updatePokemonDto: UpdatePokemonDto) {
-    return `This action updates a #${id} pokemon`;
+  async update(term: string, updatePokemonDto: UpdatePokemonDto) {
+
+    try {
+
+      const pokemon = await this.findOne(term);
+
+      const pokemonUpdate = await pokemon.updateOne(updatePokemonDto, { new: true })
+
+      return pokemonUpdate;
+
+    } catch (error) {
+
+      this.handleExceptions(error);
+
+
+    }
   }
 
   remove(id: number) {
     return `This action removes a #${id} pokemon`;
+  }
+
+  private handleExceptions (error:any){
+
+    if (error.code === 11000) {
+
+      throw new BadRequestException(` Pokemon exist in db ${JSON.stringify(error.keyValue)}`)
+    }
+
+    console.log(error);
+
+    throw new InternalServerErrorException(`cant create pokemon -check server`)
+
   }
 }

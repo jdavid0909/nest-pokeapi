@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, Res } from '@nestjs/common';
 import { PokemonService } from './pokemon.service';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { Pokemon } from './entities/pokemon.entity';
 
 @Controller('pokemon')
 export class PokemonController {
@@ -14,18 +15,33 @@ export class PokemonController {
   }
 
   @Get()
-  findAll() {
-    return this.pokemonService.findAll();
+  async findAll(@Res() res) {
+
+    
+    const pokemons:Pokemon[] = await this.pokemonService.findAll();
+
+    return res.status(HttpStatus.OK).json({
+      message: 'pokemones',
+      product: pokemons
+  })
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.pokemonService.findOne(+id);
+  @Get(':term')
+  async findOne(@Param('term') term: string) {
+    const pokemon = await  this.pokemonService.findOne(term);
+
+
+  return pokemon
+
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePokemonDto: UpdatePokemonDto) {
-    return this.pokemonService.update(+id, updatePokemonDto);
+  @Patch(':term')
+  async update(@Param('term') term: string, @Body() updatePokemonDto: UpdatePokemonDto) {
+
+
+    updatePokemonDto.name = updatePokemonDto.name.toLocaleLowerCase();
+
+    return await this.pokemonService.update(term, updatePokemonDto);
   }
 
   @Delete(':id')
